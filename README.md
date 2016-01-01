@@ -9,7 +9,6 @@ Code is written in Go, and relies on `github.com/jzelinskie/geddit` and `github.
 # License
 
 The MIT License (MIT)
-=====================
 
 Copyright © `<2015>` `<Curtis Brandt>`
 
