@@ -1,6 +1,6 @@
 # hockeygfy
 
-This is the source for hockeygfy, which populates https://twitter.com/hockeygfy.com.
+This is the source for hockeygfy, which populates https://twitter.com/hockeygfy.
 
 This runs on a FreeBSD box and daemontools is used to manage its existence.
 
