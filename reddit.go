@@ -7,7 +7,7 @@ import (
 
 type RedditBot struct {
 	Cache  *lru.Cache
-	client *geddit.OAuthSession
+	Client *geddit.OAuthSession
 }
 
 type RedditConfig struct {
@@ -43,16 +43,20 @@ func NewRedditBot(cfg *RedditConfig) (*RedditBot, error) {
 
 	r := &RedditBot{
 		Cache:  lru.New(500),
-		client: o,
+		Client: o,
 	}
 	return r, nil
+}
+
+func (r *RedditBot) Reauthorize(cfg *RedditConfig) error {
+	return r.Client.LoginAuth(cfg.Username, cfg.Password)
 }
 
 func (r *RedditBot) FetchNewLinks() ([]*RedditLink, error) {
 	opts := geddit.ListingOptions{
 		Limit: 100,
 	}
-	links, err := r.client.SubredditSubmissions("hockey", geddit.HotSubmissions, opts)
+	links, err := r.Client.SubredditSubmissions("hockey", geddit.HotSubmissions, opts)
 	if err != nil {
 		return nil, err
 	}

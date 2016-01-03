@@ -28,6 +28,14 @@ func main() {
 	// Now tick over the same function every hour.
 	ticker := time.NewTicker(1 * time.Hour)
 	for range ticker.C {
+		if r.Client.TokenExpiry.Before(time.Now()) {
+			log.Print("Token is expired! Requesting new token...")
+			err = r.Reauthorize(cfg.Reddit)
+			if err != nil {
+				log.Printf("Problem creating new token: %s. Will try again.\n", err)
+				continue
+			}
+		}
 		run(t, r)
 	}
 
