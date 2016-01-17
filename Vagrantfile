@@ -69,7 +69,6 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", run: "always", inline: <<-SHELL
     pkg update
-    pkg install -y ca_root_nss daemontools
-    /usr/local/bin/memcached -d -u nobody
+    pkg install -y ca_root_nss daemontools sqlite3
   SHELL
 end

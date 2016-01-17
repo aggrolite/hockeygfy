@@ -1,0 +1,9 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE links
+(id INTEGER NOT NULL,
+reddit_id VARCHAR(9),
+url VARCHAR(255), title varchar(300),
+PRIMARY KEY(id),
+UNIQUE(reddit_id));
+COMMIT;
