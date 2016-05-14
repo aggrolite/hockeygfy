@@ -1,5 +1,2 @@
-os=freebsd
-arch=386
-
 all:
-	GOOS=$(os) GOARCH=$(arch) go build
+	g++ -std=c++11 -Wall -lcurl main.cpp -ohockeygfy
