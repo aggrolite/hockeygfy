@@ -1,20 +1,28 @@
-#define CURL_MAX_WRITE_SIZE 5000000
-
 #include <iostream>
+#include <regex>
 #include <curl/curl.h>
 
 #include "json.hpp"
 
-#define URL "http://reddit.com/r/hockey.json"
+#define URL "http://reddit.com/r/hockey.json?limit=100"
 #define UA "hockeygfy v2.0 by u/aggrolite; twitter=@hockeygfy; website=hockeygfy.com; src=github.com/aggrolite/hockeygfy"
 
 
 using namespace::std;
 using namespace::nlohmann;
 
-size_t writeCallback(char* content, size_t size, size_t nmemb, void* userp) {
+//const bool debug = true;
+
+// Write response body to our provided pointer.
+size_t writeBody(char* content, size_t size, size_t nmemb, void* body) {
     size_t realsize = size * nmemb;
-    ((std::string*)userp)->append((char*)content, size * nmemb);
+    string* b = static_cast<string*>(body);
+    char* c = static_cast<char*>(content);
+
+    // writeCallback() could be called more than once.
+    // Append response body and parse as JSON later.
+    b->append(c, realsize);
+
     return realsize;
 }
 
@@ -32,7 +40,25 @@ void setOptions(CURL* c, string* b) {
     curl_easy_setopt(c, CURLOPT_WRITEDATA, b);
 
     // Write content using defined callback.
-    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, writeCallback);
+    curl_easy_setopt(c, CURLOPT_WRITEFUNCTION, writeBody);
+}
+
+// Ignore non-gfycat links.
+bool filterLinks(int depth, json::parse_event_t event, json& parsed) {
+    bool isObject = (event == json::parse_event_t::object_end);
+    bool hasData = parsed.count("data") > 0;
+
+    if (isObject and hasData and parsed["data"].count("is_self")) {
+        auto d = parsed["data"];
+        string url = d["url"];
+        regex re("^https?://(?:www\\.)?gfycat\\.com", regex::icase);
+
+        if (!d["is_self"] and regex_search(url, re)) {
+            return true;
+        }
+        return false;
+    }
+    return true;
 }
 
 int main(int argc, char **argv) {
@@ -58,9 +84,12 @@ int main(int argc, char **argv) {
     }
     curl_easy_cleanup(conn);
 
-    json j = json::parse(buffer);
+    // Parse JSON and use callback to filter out non-gfycat links.
+    json j = json::parse(buffer, static_cast<json::parser_callback_t>(filterLinks));
 
-    cout << j["kind"] << "\n";
-
+    // Print URLs collected.
+    for (auto& el : j["data"]["children"]) {
+        cout << el["data"]["url"] << "\n";
+    }
     return 0;
 }
